@@ -67,6 +67,7 @@ body{display:flex;align-items:center;justify-content:center;font-family:'Lil','L
 .rk h4{font-weight:400;font-size:38px;color:#ffd75e;display:flex;justify-content:space-between;align-items:center}.rk h4 span{font-size:24px;color:#a99ad8}
 .rk .r{display:flex;align-items:center;gap:14px;margin-top:6px;height:42px;padding:0 12px;border-radius:21px;font-size:30px}.rk .r:first-of-type{background:rgba(255,214,94,.18);border:2px solid rgba(255,214,94,.55)}
 .rk .r b{width:34px;color:#ffd75e;font-weight:400}.rk .r .n{flex:0 1 auto;max-width:640px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rk .r .v{color:#7ee8cf;flex:none}.rk .r .v::before{content:'· ';color:#ffffff88}
+.rk .r .v small{font-size:.72em;opacity:.8}.rk .r{background-repeat:no-repeat}
 .rk .vz{font-size:30px;color:#a99ad8;text-align:center;margin-top:78px}
 .apoio{position:absolute;left:40px;right:40px;top:1682px;height:58px;border-radius:30px;background:rgba(74,34,12,.92);border:4px solid #fff3d6;text-align:center;font-size:28px;line-height:50px}
 .selo-ia{position:absolute;left:40px;top:1756px;z-index:40;font-size:24px;color:#fff;background:rgba(0,0,0,.7);border:3px solid rgba(255,255,255,.85);border-radius:16px;padding:4px 14px;letter-spacing:.5px;pointer-events:none}
@@ -182,7 +183,7 @@ function render(){$('slots').innerHTML=S.slots.map(s=>{if(s.found){const u=s.fou
   const ln=[...Array(s.len)].map((_,i)=>i<s.hint?`<em>${esc(s.show[i].toUpperCase())}</em>`:'<span></span>').join('');
   return `<div class="sl"><div class="len">${s.len}<small>LETRAS</small></div><div class="ln">${ln}</div></div>`}).join('');setStat()}
 function ranking(){return [...S.tot.entries()].filter(e=>e[1].n>0).sort((a,b)=>b[1].p-a[1].p||b[1].n-a[1].n)}
-function renderRk(){const r=ranking().slice(0,5);$('rk').innerHTML='<h4>🏆 TOP ACERTOS<span>META: '+CFG.meta+' PTS</span></h4>'+(r.length?r.map(([id,v],i)=>{const u=S.users.get(id);return `<div class="r"><b>${i+1}</b>${av(u,34)}<span class="n">${esc(u.name)}</span><span class="v">${v.p} pts</span></div>`}).join(''):'<div class="vz">Acerte palavras para entrar aqui!</div>')}
+function renderRk(){const r=ranking().slice(0,5);$('rk').innerHTML='<h4>🏆 TOP ACERTOS<span>1º A CHEGAR EM '+CFG.meta+' PTS GANHA</span></h4>'+(r.length?r.map(([id,v],i)=>{const u=S.users.get(id);const pc=Math.min(100,v.p/CFG.meta*100).toFixed(0);return `<div class="r" style="background-image:linear-gradient(90deg,rgba(63,208,168,.4) ${pc}%,rgba(255,255,255,.05) ${pc}%)"><b>${i+1}</b>${av(u,34)}<span class="n">${esc(u.name)}</span><span class="v">${v.p}<small>/${CFG.meta}</small> pts</span></div>`}).join(''):'<div class="vz">Acerte palavras para entrar aqui!</div>')}
 // ---------- chat
 function onChat(d){if(S.fase!=='jogo'||!d.text)return;const t=norm(d.text);if(!t||t.length>30)return;const novo=!S.users.has(d.id);const u=user(d);const agora=Date.now();if(agora-(S.ult.get(u.id)||0)<350)return;S.ult.set(u.id,agora);if(novo)toast('👋 '+cut(u.name,18)+' entrou no jogo!');
  const i=S.slots.findIndex(s=>!s.found&&(s.keys.has(t)||s.keys.has(sing(t))));if(i<0)return;
@@ -203,7 +204,7 @@ async function fimRodada(){S.fase='fim';$('tim').classList.remove('low');$('timT
  const top=[...S.rod.entries()].sort((a,b)=>b[1].p-a[1].p).slice(0,3);
  const ord=[top[1],top[0],top[2]];
  const pod=ord.map((e,k)=>{if(!e)return '<div class="p"></div>';const u=S.users.get(e[0]);return `<div class="p">${k===1?'<span class="mvp">⭐ MVP</span>':''}<div style="display:flex;justify-content:center;padding-top:${k===1?18:0}px">${av(u,k===1?110:84)}</div><b>${esc(cut(u.name,14))}</b><i>${e[1].p} pts</i></div>`}).join('');
- const rk=ranking().slice(0,4).map(([id,v],i)=>`<div class="lr"><b>${i+1}</b>${av(S.users.get(id),38)}<span class="n">${esc(S.users.get(id).name)}</span><span class="v">${v.p} pts</span></div>`).join('')||'<div class="lr"><span class="n">Ainda sem acertos</span></div>';
+ const rk=ranking().slice(0,4).map(([id,v],i)=>`<div class="lr"><b>${i+1}</b>${av(S.users.get(id),38)}<span class="n">${esc(S.users.get(id).name)}</span><span class="v">${v.p}/${CFG.meta} pts</span></div>`).join('')||'<div class="lr"><span class="n">Ainda sem acertos</span></div>';
  const lid=ranking()[0],camp=lid&&lid[1].p>=CFG.meta?lid:null;if(camp)SOM.champ();
  let cf='<div class="confetti">';const cs=['#ff2bd6','#22e4ff','#ffd60a','#2bff88','#7c3aed'];if(n>=8||camp)for(let i=0;i<36;i++)cf+=`<i style="left:${Math.random()*1000}px;background:${cs[i%5]};animation-duration:${2.5+Math.random()*2}s;animation-delay:${Math.random()}s"></i>`;cf+='</div>';
  $('over').innerHTML=`<div class="res">${cf}<div class="lg">${LOGO}GIGARISO</div>${camp?`<div class="camp">🏆 CAMPEÃO DA PARTIDA<b>${esc(cut(S.users.get(camp[0]).name,16))}</b><i>${camp[1].p} pts</i></div>`:''}<div class="t1">Rodada ${S.rodada} · ${esc(S.cat.cat)}</div><div class="t2">${n} de 12 palavras</div><div class="pod">${pod}</div>
